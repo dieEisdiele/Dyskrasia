@@ -87,7 +87,7 @@ def generateDungeon(
         # "RectangularRoom" class makes rectangles easier to work with
         newRoom = RectangularRoom(x, y, roomWidth, roomHeight)
 
-        # Run through the other rooms and see if they intersect with this one.
+        # Run through the other rooms and see if they intersect with this one
         if any(newRoom.intersects(otherRoom) for otherRoom in rooms):
             continue   # This room intersects, so go to the next attempt
         # If there are no intersections then the room is valid
@@ -97,7 +97,7 @@ def generateDungeon(
 
         if len(rooms) == 0:
             # The first room, where the player starts
-            playerX, playerY = newRoom.centre
+            player.x, player.y = newRoom.centre
         else:   # All rooms after the first
             # Dig out a tunnel between this room and the previous one
             for x, y in tunnelBetween(rooms[-1].centre, newRoom.centre):
