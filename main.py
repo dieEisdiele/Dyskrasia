@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
+import copy
+
 import tcod
 
 from engine import Engine
-from entity import Entity
+import entityFactories
 from inputHandlers import EventHandler
 from procgen import generateDungeon
 
@@ -19,15 +21,15 @@ def main() -> None:
     roomMinSize = 6
     maxRooms = 30
 
+    maxEnemiesPerRoom = 2
+
     tileset = tcod.tileset.load_tilesheet(
         "dejavu16x16_gs_tc.png", 32, 8, tcod.tileset.CHARMAP_TCOD
     )
 
     eventHandler = EventHandler()
 
-    player = Entity(int(screenWidth/2), int(screenHeight/2), "@", (255, 255, 255))
-    npc = Entity(int(screenWidth/2 - 5), int(screenHeight/2), "@", (255, 255, 0))
-    entities = {npc, player}
+    player = copy.deepcopy(entityFactories.player)
 
     gameMap = generateDungeon(
         maxRooms,
@@ -35,10 +37,11 @@ def main() -> None:
         roomMaxSize,
         mapWidth,
         mapHeight,
+        maxEnemiesPerRoom,
         player
     )
 
-    engine = Engine(entities, eventHandler, gameMap, player)
+    engine = Engine(eventHandler, gameMap, player)
 
     with tcod.context.new_terminal(
         screenWidth,

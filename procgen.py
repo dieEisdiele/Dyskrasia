@@ -5,6 +5,7 @@ from typing import Iterator, List, Tuple, TYPE_CHECKING
 
 import tcod
 
+import entityFactories
 from gameMap import GameMap
 import tileTypes
 
@@ -43,6 +44,21 @@ class RectangularRoom:
 
 
 
+def placeEntities(
+    room: RectangularRoom, dungeon: GameMap, maxEnemies: int,
+) -> None:
+    enemyAmount = random.randint(0, maxEnemies)
+
+    for i in range(enemyAmount):
+        x = random.randint(room.x1 + 1, room.x2 - 1)
+        y = random.randint(room.y1 + 1, room.y2 - 1)
+
+        if not any(entity.x == x and entity.y == y for entity in dungeon.entities):
+            if random.random() < 0.8:
+                entityFactories.guard.spawn(dungeon, x, y)
+            else:
+                entityFactories.plagueDoctor.spawn(dungeon, x, y)
+
 def tunnelBetween(
     start: Tuple[int, int], end: Tuple[int, int]
 ) -> Iterator[Tuple[int, int]]:
@@ -62,18 +78,17 @@ def tunnelBetween(
     for x, y in tcod.los.bresenham((cornerX, cornerY), (x2, y2)).tolist():
         yield x, y
 
-
-
 def generateDungeon(
     maxRooms: int,
     roomMinSize: int,
     roomMaxSize: int,
     mapWidth: int,
     mapHeight: int,
+    maxEnemiesPerRoom: int,
     player: Entity,
 ) -> GameMap:
     """Generate a new dungeon map."""
-    dungeon = GameMap(mapWidth, mapHeight)
+    dungeon = GameMap(mapWidth, mapHeight, [player])
 
     rooms: List[RectangularRoom] = []
 
@@ -102,6 +117,8 @@ def generateDungeon(
             # Dig out a tunnel between this room and the previous one
             for x, y in tunnelBetween(rooms[-1].centre, newRoom.centre):
                 dungeon.tiles[x, y] = tileTypes.floor
+
+        placeEntities(newRoom, dungeon, maxEnemiesPerRoom)
 
         # Finally, append the new room to the list
         rooms.append(newRoom)
